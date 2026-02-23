@@ -12,19 +12,25 @@ User = get_user_model()
 class Command(BaseCommand):
     """Создаёт тестовые платежи для проверки."""
 
-    help = "Создаёт примеры платежей в базе данных"
+    help = "Создаёт примеры пользователей, курсов и платежей для тестирования."
 
     def handle(self, *args, **options):
-        user = User.objects.first()
+        user, _ = User.objects.get_or_create(
+            email="test_user@example.com",
+            defaults={"city": "Москва", "is_active": True}
+        )
 
-        if not user:
-            self.stdout.write(self.style.ERROR("Пользователь не найден. Создайте хотя бы одного."))
-            return
+        course, _ = Course.objects.get_or_create(
+            title="Django REST Framework",
+            defaults={"description": "Учебный курс по DRF"}
+        )
 
-        course = Course.objects.first()
-        lesson = Lesson.objects.first()
+        lesson, _ = Lesson.objects.get_or_create(
+            title="Урок 1. Введение в DRF",
+            defaults={"course": course, "description": "Основы DRF"}
+        )
 
-        Payment.objects.create(user=user, course=course, amount=Decimal("199.00"), payment_method="transfer")
-        Payment.objects.create(user=user, lesson=lesson, amount=Decimal("49.00"), payment_method="cash")
+        Payment.objects.get_or_create(user=user, course=course, amount=200, payment_method="transfer")
+        Payment.objects.get_or_create(user=user, lesson=lesson, amount=100, payment_method="cash")
 
-        self.stdout.write(self.style.SUCCESS("Тестовые платежи успешно созданы."))
+        self.stdout.write(self.style.SUCCESS("Тестовые пользователи, курсы и платежи успешно созданы!"))

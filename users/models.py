@@ -72,7 +72,7 @@ class Payment(models.Model):
         verbose_name="Урок",
         help_text="Урок, за который произведена оплата",
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Сумма оплаты")
+    amount = models.PositiveIntegerField(verbose_name="Сумма оплаты")
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, verbose_name="Способ оплаты")
 
     def __str__(self):

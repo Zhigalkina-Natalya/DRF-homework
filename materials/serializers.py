@@ -4,17 +4,25 @@ from materials.models import Course, Lesson
 
 
 class LessonSerializer(serializers.ModelSerializer):
-    """Сериализатор для модели Lesson."""
+    """Полный сериализатор для модели Lesson."""
 
     class Meta:
         model = Lesson
         fields = ["id", "title", "description", "preview", "video_url", "course"]
 
 
+class LessonShortSerializer(serializers.ModelSerializer):
+    """Сокращённый сериализатор для вывода уроков в составе курса."""
+
+    class Meta:
+        model = Lesson
+        fields = ["id", "title"]
+
+
 class CourseSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Course. Добавляет: количество уроков в курсе, список всех связанных уроков"""
 
-    lessons = LessonSerializer(many=True, read_only=True)
+    lessons = LessonShortSerializer(many=True, read_only=True)
     lessons_count = serializers.SerializerMethodField()
 
     class Meta:
