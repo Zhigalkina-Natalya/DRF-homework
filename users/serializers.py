@@ -42,6 +42,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_staff", "is_active"]
 
 
+class PublicUserSerializer(serializers.ModelSerializer):
+    """Упрощённый сериализатор для чужого профиля."""
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "city", "avatar"]
+
+
 class PaymentSerializer(serializers.ModelSerializer):
     """Cериализатор для модели Payment."""
 

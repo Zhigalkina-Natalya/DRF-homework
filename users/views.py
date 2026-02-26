@@ -3,7 +3,9 @@ from rest_framework import generics, viewsets, permissions
 from rest_framework.filters import OrderingFilter
 
 from users.models import Payment, User
-from users.serializers import PaymentSerializer, UserSerializer, UserDetailSerializer, RegisterSerializer
+from users.permissions import IsSelfOrReadOnly
+from users.serializers import PaymentSerializer, UserSerializer, UserDetailSerializer, RegisterSerializer, \
+    PublicUserSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -36,10 +38,20 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     """
     Просмотр и обновление профиля пользователя.
     Использует UserSerializer с историей платежей.
+    Любой авторизованный может просматривать чужой профиль (ограниченная информация)
+    Редактировать можно только свой профиль
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsSelfOrReadOnly]
+
+    def get_serializer_class(self):
+        """Выбираем сериализатор в зависимости от того, чей профиль запрошен."""
+        # Если профиль свой — показать полный сериализатор
+        if self.get_object() == self.request.user:
+            return UserSerializer
+        # Если чужой — упрощённый
+        return PublicUserSerializer
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
