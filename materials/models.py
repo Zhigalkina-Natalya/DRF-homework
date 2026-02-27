@@ -13,7 +13,8 @@ class Course(models.Model):
         related_name="courses",
         verbose_name="Владелец",
         help_text="Пользователь, создавший курс",
-        null=True, blank=True,
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -37,7 +38,8 @@ class Lesson(models.Model):
         related_name="lessons",
         verbose_name="Владелец",
         help_text="Пользователь, создавший урок",
-        null=True, blank=True,
+        null=True,
+        blank=True,
     )
 
     class Meta:
@@ -47,3 +49,21 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.course})"
+
+
+class Subscription(models.Model):
+    """Модель подписки пользователя на курс."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="subscriptions", verbose_name="Пользователь"
+    )
+    course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name="subscriptions", verbose_name="Курс")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата подписки")
+
+    class Meta:
+        unique_together = ("user", "course")
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+
+    def __str__(self):
+        return f"Подписка: {self.user} → {self.course}"

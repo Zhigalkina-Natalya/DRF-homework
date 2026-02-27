@@ -6,9 +6,7 @@ class IsModerator(BasePermission):
 
     def has_permission(self, request, view):
         return (
-                request.user
-                and request.user.is_authenticated
-                and request.user.groups.filter(name="Модераторы").exists()
+            request.user and request.user.is_authenticated and request.user.groups.filter(name="Модераторы").exists()
         )
 
 
