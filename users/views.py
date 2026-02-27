@@ -1,11 +1,11 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, viewsets, permissions
+from rest_framework import generics, permissions, viewsets
 from rest_framework.filters import OrderingFilter
 
 from users.models import Payment, User
 from users.permissions import IsSelfOrReadOnly
-from users.serializers import PaymentSerializer, UserSerializer, UserDetailSerializer, RegisterSerializer, \
-    PublicUserSerializer
+from users.serializers import (PaymentSerializer, PublicUserSerializer, RegisterSerializer, UserDetailSerializer,
+                               UserSerializer)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -13,6 +13,7 @@ class RegisterView(generics.CreateAPIView):
     Эндпоинт для регистрации нового пользователя.
     Доступен неавторизованным (AllowAny).
     """
+
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
@@ -29,6 +30,7 @@ class UserViewSet(viewsets.ModelViewSet):
     CRUD для пользователей.
     Доступ только авторизованным пользователям.
     """
+
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -41,6 +43,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     Любой авторизованный может просматривать чужой профиль (ограниченная информация)
     Редактировать можно только свой профиль
     """
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsSelfOrReadOnly]
