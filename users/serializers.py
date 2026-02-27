@@ -23,6 +23,33 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "phone", "city", "avatar", "payments"]
 
 
+class RegisterSerializer(serializers.ModelSerializer):
+    """Сериализатор для регистрации нового пользователя."""
+
+    password = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "password", "phone", "city", "avatar"]
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    """Сериализатор для просмотра и редактирования данных пользователя."""
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "phone", "city", "avatar", "is_active", "is_staff"]
+        read_only_fields = ["is_staff", "is_active"]
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+    """Упрощённый сериализатор для чужого профиля."""
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "city", "avatar"]
+
+
 class PaymentSerializer(serializers.ModelSerializer):
     """Cериализатор для модели Payment."""
 

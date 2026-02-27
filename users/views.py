@@ -1,21 +1,68 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, viewsets
+from rest_framework import generics, viewsets, permissions
 from rest_framework.filters import OrderingFilter
 
 from users.models import Payment, User
-from users.serializers import PaymentSerializer, UserSerializer
+from users.permissions import IsSelfOrReadOnly
+from users.serializers import PaymentSerializer, UserSerializer, UserDetailSerializer, RegisterSerializer, \
+    PublicUserSerializer
+
+
+class RegisterView(generics.CreateAPIView):
+    """
+    Эндпоинт для регистрации нового пользователя.
+    Доступен неавторизованным (AllowAny).
+    """
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        """Сохраняет пользователя и хеширует пароль."""
+        user = serializer.save(is_active=True)
+        user.set_password(user.password)
+        user.save()
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    CRUD для пользователей.
+    Доступ только авторизованным пользователям.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    Просмотр и обновление профиля пользователя.
+    Использует UserSerializer с историей платежей.
+    Любой авторизованный может просматривать чужой профиль (ограниченная информация)
+    Редактировать можно только свой профиль
+    """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsSelfOrReadOnly]
+
+    def get_serializer_class(self):
+        """Выбираем сериализатор в зависимости от того, чей профиль запрошен."""
+        # Если профиль свой — показать полный сериализатор
+        if self.get_object() == self.request.user:
+            return UserSerializer
+        # Если чужой — упрощённый
+        return PublicUserSerializer
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
-    """ViewSet для модели Payment с фильтрацией и сортировкой."""
+    """
+    ViewSet для модели Payment с фильтрацией и сортировкой.
+    Доступ только авторизованным пользователям.
+    """
 
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
 
@@ -26,12 +73,10 @@ class PaymentViewSet(viewsets.ModelViewSet):
     ordering = ["-paid_at"]
 
     def perform_create(self, serializer):
-        """Сохраняет платёж, подставляя пользователя, если он не указан явно."""
+        """Сохраняет платёж, автоматически подставляя пользователя."""
         user_id = self.request.data.get("user")
         if user_id:
             serializer.save(user_id=user_id)
         else:
-            from users.models import User
-
-            admin_user = User.objects.filter(is_superuser=True).first()
-            serializer.save(user=admin_user)
+            # если не передан, присвоим текущего пользователя
+            serializer.save(user=self.request.user)
