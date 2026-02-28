@@ -28,6 +28,10 @@ flake8 = "^7.3.0"
 isort = "^7.0.0"
 
 
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.13.4"
+
 [tool.black]
 # Максимальная длина строки
 line-length = 119

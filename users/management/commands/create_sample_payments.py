@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
@@ -16,18 +14,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         user, _ = User.objects.get_or_create(
-            email="test_user@example.com",
-            defaults={"city": "Москва", "is_active": True}
+            email="test_user@example.com", defaults={"city": "Москва", "is_active": True}
         )
 
         course, _ = Course.objects.get_or_create(
-            title="Django REST Framework",
-            defaults={"description": "Учебный курс по DRF"}
+            title="Django REST Framework", defaults={"description": "Учебный курс по DRF"}
         )
 
         lesson, _ = Lesson.objects.get_or_create(
-            title="Урок 1. Введение в DRF",
-            defaults={"course": course, "description": "Основы DRF"}
+            title="Урок 1. Введение в DRF", defaults={"course": course, "description": "Основы DRF"}
         )
 
         Payment.objects.get_or_create(user=user, course=course, amount=200, payment_method="transfer")
