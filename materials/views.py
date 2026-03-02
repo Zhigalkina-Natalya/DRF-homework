@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions, status, viewsets
+from drf_spectacular.utils import extend_schema
+from rest_framework import generics, permissions, status, viewsets, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -105,6 +106,16 @@ class LessonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         return [permission() for permission in self.permission_classes]
 
 
+class SubscriptionToggleSerializer(serializers.Serializer):
+    course_id = serializers.IntegerField()
+
+
+@extend_schema(
+    request=SubscriptionToggleSerializer,
+    responses={200: dict, 400: dict},
+    summary="Добавление или удаление подписки",
+    description="Если подписка есть — удаляется. Если нет — создаётся.",
+)
 class SubscriptionToggleView(APIView):
     """Добавление или удаление подписки пользователя на курс."""
 

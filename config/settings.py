@@ -29,11 +29,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "rest_framework",
-    'rest_framework_simplejwt',
+    "rest_framework_simplejwt",
     "django_filters",
-
+    "drf_spectacular",
     "users",
     "materials",
 ]
@@ -67,16 +66,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-REST_FRAMEWORK = {"DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
-                  # Настройки JWT-токенов
-                  'DEFAULT_AUTHENTICATION_CLASSES': [
-                      'rest_framework_simplejwt.authentication.JWTAuthentication',
-                  ],
-                  # требовать авторизацию для всех запросов
-                  "DEFAULT_PERMISSION_CLASSES": [
-                      "rest_framework.permissions.IsAuthenticated",
-                  ],
-                  }
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    # Настройки JWT-токенов
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    # требовать авторизацию для всех запросов
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    # Настройки схемы OpenAPI
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
@@ -133,6 +135,13 @@ AUTH_USER_MODEL = "users.User"
 
 # Настройки срока действия токенов
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Django LMS API",
+    "DESCRIPTION": "API для управления курсами, уроками, пользователями и платежами в системе LMS.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }

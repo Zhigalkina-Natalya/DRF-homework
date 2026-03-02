@@ -1,11 +1,17 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import generics, permissions, viewsets
 from rest_framework.filters import OrderingFilter
 
 from users.models import Payment, User
 from users.permissions import IsSelfOrReadOnly
-from users.serializers import (PaymentSerializer, PublicUserSerializer, RegisterSerializer, UserDetailSerializer,
-                               UserSerializer)
+from users.serializers import (
+    PaymentSerializer,
+    PublicUserSerializer,
+    RegisterSerializer,
+    UserDetailSerializer,
+    UserSerializer,
+)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -36,6 +42,21 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
+@extend_schema(
+    summary="Просмотр и редактирование профиля пользователя",
+    description=(
+        "Возвращает полный профиль пользователя с платежами (если свой профиль) " "или публичный профиль (если чужой)."
+    ),
+    parameters=[
+        OpenApiParameter(
+            name="pk",
+            type=int,
+            location=OpenApiParameter.PATH,
+            description="ID пользователя (например, /users/profile/1/)",
+        )
+    ],
+    responses={200: UserSerializer},
+)
 class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     """
     Просмотр и обновление профиля пользователя.
@@ -47,6 +68,7 @@ class UserProfileUpdateView(generics.RetrieveUpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsSelfOrReadOnly]
+    lookup_field = "pk"  # для подсказки Spectacular
 
     def get_serializer_class(self):
         """Выбираем сериализатор в зависимости от того, чей профиль запрошен."""
