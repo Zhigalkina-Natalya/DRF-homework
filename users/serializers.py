@@ -73,3 +73,11 @@ class PaymentSerializer(serializers.ModelSerializer):
             "amount",
             "payment_method",
         ]
+
+
+class CreateStripeSessionSerializer(serializers.Serializer):
+    """Сериализатор для создания Stripe-сессии оплаты."""
+
+    course_id = serializers.IntegerField()
+    success_url = serializers.URLField()
+    cancel_url = serializers.URLField()

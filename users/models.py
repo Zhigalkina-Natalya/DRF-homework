@@ -74,6 +74,13 @@ class Payment(models.Model):
     )
     amount = models.PositiveIntegerField(verbose_name="Сумма оплаты")
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, verbose_name="Способ оплаты")
+    stripe_session_id = models.CharField(
+        max_length=500, blank=True, null=True, verbose_name="Id сессии", help_text="Укажите Id сессии"
+    )
+    checkout_url = models.URLField(
+        max_length=1000, blank=True, null=True, verbose_name="Ссылка на оплату", help_text="Укажите ссылку на оплату"
+    )
+    payment_status = models.CharField(max_length=50, blank=True, null=True, verbose_name="Статус оплаты")
 
     def __str__(self):
         """Строковое представление платежа в админке."""

@@ -1,17 +1,23 @@
+from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import generics, permissions, viewsets
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.filters import OrderingFilter
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from materials.models import Course
 from users.models import Payment, User
 from users.permissions import IsSelfOrReadOnly
 from users.serializers import (
+    CreateStripeSessionSerializer,
     PaymentSerializer,
     PublicUserSerializer,
     RegisterSerializer,
     UserDetailSerializer,
     UserSerializer,
 )
+from users.services import create_checkout_session, create_stripe_price, create_stripe_product
 
 
 class RegisterView(generics.CreateAPIView):
@@ -105,3 +111,73 @@ class PaymentViewSet(viewsets.ModelViewSet):
         else:
             # если не передан, присвоим текущего пользователя
             serializer.save(user=self.request.user)
+
+
+@extend_schema(
+    summary="Создание Stripe Checkout-сессии",
+    description="Создаёт продукт, цену и ссылку на оплату курса в Stripe.",
+    request=CreateStripeSessionSerializer,
+    responses={201: dict},
+)
+class CreateStripeSessionView(APIView):
+    """Создание Stripe-сессии для оплаты курса."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CreateStripeSessionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        course_id = serializer.validated_data["course_id"]
+        success_url = serializer.validated_data["success_url"]
+        cancel_url = serializer.validated_data["cancel_url"]
+
+        # Получаем курс
+        course = get_object_or_404(Course, id=course_id)
+
+        # Для теста задаём цену
+        amount = 199
+
+        # Создаём продукт и цену в Stripe
+        product = create_stripe_product(name=course.title, description=course.description)
+        price = create_stripe_price(product.id, amount, "rub")
+
+        # Создаём checkout-сессию
+        metadata = {"course_id": str(course.id), "user_id": str(request.user.id)}
+        session = create_checkout_session(price.id, success_url, cancel_url, metadata)
+
+        # Получаем данные из объекта
+        stripe_session_id = getattr(session, "id", None)
+        checkout_url = getattr(session, "url", None)
+        payment_status = getattr(session, "payment_status", "")
+
+        # Сохраняем платёж в базе
+        payment = Payment.objects.create(
+            user=request.user,
+            course=course,
+            amount=amount,
+            payment_method="transfer",
+            stripe_session_id=stripe_session_id,
+            checkout_url=checkout_url,
+            payment_status=payment_status,
+        )
+
+        # Возвращаем данные через getattr()
+        return Response(
+            {
+                "message": f"Сессия оплаты создана для курса: {course.title}",
+                "checkout_url": checkout_url,
+                "stripe_session_id": stripe_session_id,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+def payment_success(request):
+    """Визуальная страница успешной оплаты."""
+    return render(request, "users/success.html")
+
+
+def payment_cancel(request):
+    """Визуальная страница отменённой оплаты."""
+    return render(request, "users/cancel.html")
