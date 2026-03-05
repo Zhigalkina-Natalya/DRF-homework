@@ -18,6 +18,7 @@ class Course(models.Model):
     )
     stripe_product_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID продукта в Stripe")
     stripe_price_id = models.CharField(max_length=255, blank=True, null=True, verbose_name="ID цены в Stripe")
+    last_notification_at = models.DateTimeField(null=True, blank=True, verbose_name="Последнее уведомление")
 
     class Meta:
         verbose_name = "Курс"

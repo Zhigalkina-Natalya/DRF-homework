@@ -1,8 +1,8 @@
 import os
 from datetime import timedelta
 from pathlib import Path
-from celery.schedules import crontab
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -34,8 +34,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "django_filters",
     "drf_spectacular",
-    'django_celery_beat',
-
+    "django_celery_beat",
     "users",
     "materials",
 ]
@@ -152,10 +151,10 @@ SPECTACULAR_SETTINGS = {
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
 
 # URL-адрес брокера сообщений
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 
 # URL-адрес брокера результатов
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 # Часовой пояс для работы Celery
 CELERY_TIMEZONE = TIME_ZONE
@@ -166,7 +165,7 @@ CELERY_TASK_TRACK_STARTED = True
 # Максимальное время на выполнение задачи
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CELERY_BEAT_SCHEDULE = {
     # пример периодической задачи (каждые сутки в 02:00)
@@ -189,14 +188,12 @@ SERVER_EMAIL = EMAIL_HOST_USER
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "verbose": {
             "format": "{levelname} {asctime} {name} {message}",
             "style": "{",
         },
     },
-
     "handlers": {
         "file_tasks": {
             "level": "INFO",
@@ -210,7 +207,6 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
-
     "loggers": {
         "materials.tasks": {
             "handlers": ["file_tasks", "console"],
