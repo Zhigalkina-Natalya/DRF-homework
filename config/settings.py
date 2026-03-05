@@ -168,10 +168,9 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 CELERY_BEAT_SCHEDULE = {
-    # пример периодической задачи (каждые сутки в 02:00)
-    "daily-cleanup": {
-        "task": "users.tasks.daily_cleanup_task",
-        "schedule": crontab(hour=2, minute=0),
+    "deactivate_inactive_users": {
+        "task": "users.tasks.deactivate_inactive_users",
+        "schedule": crontab(hour=3, minute=0),  # каждый день в 03:00
     },
 }
 
@@ -209,6 +208,11 @@ LOGGING = {
     },
     "loggers": {
         "materials.tasks": {
+            "handlers": ["file_tasks", "console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "users.tasks": {
             "handlers": ["file_tasks", "console"],
             "level": "INFO",
             "propagate": False,

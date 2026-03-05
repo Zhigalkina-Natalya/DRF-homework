@@ -273,6 +273,125 @@ TOTAL COVERAGE: 91%
 
 5. Проверяет статус через: `GET /users/check-payment/<stripe_session_id>/`
 
+
+---
+
+# Django LMS Project — Часть 6
+
+**Продолжение проекта LMS** 
+
+**Цель** — добавить асинхронные задачи и автоматические фоновые процессы с использованием `Celery`, `Redis` и `celery-beat`.
+
+
+### Основные изменения:
+1. **Настройка Celery**
+
+Проект настроен для работы с `Celery` — системой фоновых задач.
+
+Добавлены файлы конфигурации:
+
+- `config/celery.py` — основной файл настройки Celery
+
+- `config/__init__.py` — подключение Celery при запуске Django
+
+Celery использует Redis в качестве брокера сообщений и backend результатов.
+
+Настройки вынесены в **переменные окружения**:
+```
+CELERY_BROKER_URL
+CELERY_RESULT_BACKEND
+```
+В `settings.py` добавлены настройки:
+
+- `CELERY_TIMEZONE`
+
+- `CELERY_TASK_TRACK_STARTED`
+
+- `CELERY_TASK_TIME_LIMIT`
+
+2. Подключение celery-beat
+
+Для выполнения **периодических задач** подключено приложение: `django_celery_beat`
+
+В INSTALLED_APPS: `django_celery_beat`
+
+Используется планировщик: `CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"`
+
+Периодические задачи описаны в `CELERY_BEAT_SCHEDULE`.
+
+3. Асинхронная рассылка при обновлении курса
+
+Добавлена Celery-задача: 
+`materials/tasks.py`
+`send_course_update_email(course_id)`
+
+Задача:
+
+- получает курс
+
+- находит всех подписчиков (Subscription)
+
+- отправляет email-уведомление
+
+Письмо отправляется **асинхронно**, чтобы не блокировать основной поток API.
+
+Задача вызывается из контроллера при обновлении курса.
+
+4. **Ограничение частоты уведомлений**
+
+Добавлена защита от слишком частых уведомлений.
+
+В модели Course используется поле: `last_notification_at`
+
+Логика:
+
+- если курс обновлялся **менее 4 часов назад**
+
+- уведомления **не отправляются повторно**
+
+Это предотвращает спам-рассылку при частых обновлениях курса.
+
+5. **Периодическая блокировка неактивных пользователей**
+
+Добавлена фоновая задача:
+
+`users/tasks.py`
+`deactivate_inactive_users`
+
+Задача:
+
+- проверяет поле `last_login`
+
+- если пользователь **не заходил более 30 дней**
+
+- его аккаунт автоматически блокируется:
+
+`is_active = False`
+
+Задача запускается **ежедневно** через `celery-beat`.
+
+6. **Логирование фоновых задач**
+
+Для задач `Celery` настроено логирование.
+
+Логи сохраняются в файл: `logs/tasks.log`
+
+Отслеживаются:
+
+- отправка писем
+
+- ошибки отправки
+
+- блокировка пользователей
+
+- выполнение задач
+---
+### Как запустить Celery
+1. Запустить Redis `redis-server` 
+2. Запустить Celery Worker `celery -A config worker -l info`
+3. Запустить Celery Beat `celery -A config beat -l info`
+4. Запустить Django `python manage.py runserver`
+
 ---
 
 ## Технологии
@@ -282,6 +401,9 @@ TOTAL COVERAGE: 91%
 - Django REST Framework
 - Django Filters
 - Stripe API
+- Redis
+- Celery
+- Celery-beat
 - SimpleJWT (аутентификация)
 - Coverage
 - PostgreSQL
