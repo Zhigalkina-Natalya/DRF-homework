@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, permissions, status, viewsets
+from drf_spectacular.utils import extend_schema
+from rest_framework import generics, permissions, serializers, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -7,6 +8,7 @@ from materials.models import Course, Lesson, Subscription
 from materials.paginators import CoursePagination, LessonPagination
 from materials.permissions import IsModerator, IsOwner
 from materials.serializers import CourseSerializer, LessonSerializer
+from materials.tasks import send_course_update_email
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -44,6 +46,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in self.permission_classes]
+
+    def perform_update(self, serializer):
+        """Отправка письма подписчикам при обновлении курса"""
+
+        course = serializer.save()
+        # запускаем celery задачу
+        send_course_update_email.delay(course.id)
 
 
 class LessonListCreateView(generics.ListCreateAPIView):
@@ -105,6 +114,16 @@ class LessonRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         return [permission() for permission in self.permission_classes]
 
 
+class SubscriptionToggleSerializer(serializers.Serializer):
+    course_id = serializers.IntegerField()
+
+
+@extend_schema(
+    request=SubscriptionToggleSerializer,
+    responses={200: dict, 400: dict},
+    summary="Добавление или удаление подписки",
+    description="Если подписка есть — удаляется. Если нет — создаётся.",
+)
 class SubscriptionToggleView(APIView):
     """Добавление или удаление подписки пользователя на курс."""
 

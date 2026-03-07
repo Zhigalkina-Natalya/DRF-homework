@@ -73,3 +73,19 @@ class PaymentSerializer(serializers.ModelSerializer):
             "amount",
             "payment_method",
         ]
+
+
+class CreateStripeSessionSerializer(serializers.Serializer):
+    """
+    Сериализатор для создания Stripe-сессии оплаты.
+    Можно передать либо course_id, либо lesson_id.
+    """
+
+    course_id = serializers.IntegerField(required=False)
+    lesson_id = serializers.IntegerField(required=False)
+
+    def validate(self, data):
+        """Проверяем, что передан хотя бы course_id или lesson_id."""
+        if not data.get("course_id") and not data.get("lesson_id"):
+            raise serializers.ValidationError("Необходимо указать course_id или lesson_id.")
+        return data
