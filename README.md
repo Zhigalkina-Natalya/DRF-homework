@@ -1,11 +1,84 @@
-# Django LMS Project — Часть 1
+# Django LMS Project
 
 Учебный проект по разработке **LMS (Learning Management System)** — платформы для онлайн-обучения, где пользователи могут размещать свои курсы и уроки.
 
-Проект реализован с использованием **Django** и **Django REST Framework**.  
-Результат — это **backend-сервер**, возвращающий клиенту JSON-ответы.
+Проект реализован с использованием **Django** и **Django REST Framework**, **PostgreSQL**, **Redis**, **Celery** и **Docker**. 
+Backend реализован как **REST API**, возвращающий JSON-ответы.
 
 ---
+# Запуск проекта через Docker
+
+## 1. Клонировать репозиторий
+
+```
+git clone https://github.com/Zhigalkina-Natalya/DRF-homework
+```
+
+## 2. Создать файл `.env`
+
+Создайте файл `.env` в корне проекта.
+
+Пример содержимого в файле `.env.sample`
+
+## 3. Запуск проекта
+
+Запустить все сервисы одной командой:
+```
+docker compose up --build
+```
+Будут запущены следующие контейнеры:
+
+- Django backend
+- PostgreSQL
+- Redis
+- Celery Worker
+- Celery Beat
+
+
+# Проверка работы сервисов
+
+## Django API
+```
+http://localhost:8000
+```
+## Swagger документация
+```
+http://localhost:8000/api/docs/swagger/
+```
+## Проверка PostgreSQL
+Проверить контейнер:
+```
+docker ps
+```
+## Проверка Celery Worker
+
+Посмотреть логи:
+```
+docker compose logs celery
+```
+## Проверка Celery Beat
+
+Посмотреть логи:
+```
+docker compose logs celery-beat
+```
+
+# Архитектура проекта
+
+Проект состоит из нескольких сервисов, запускаемых через **docker-compose**.
+
+| Сервис        | Назначение                      |
+|---------------|---------------------------------|
+| Django        | основной backend API            |
+| PostgreSQL    | база данных                     |
+| Redis         | брокер сообщений                |
+| Celery Worker | выполнение фоновых задач        |
+| Celery Beat   | планировщик периодических задач |
+
+
+---
+
+# Django LMS Project — Часть 1
 
 ## Задание
 
@@ -399,14 +472,15 @@ CELERY_RESULT_BACKEND
 - Python 3.13  
 - Django 6  
 - Django REST Framework
-- Django Filters
-- Stripe API
+- PostgreSQL
 - Redis
 - Celery
-- Celery-beat
+- Celery Beat
+- Stripe API
 - SimpleJWT (аутентификация)
+- Docker
+- Docker Compose
 - Coverage
-- PostgreSQL
 
 ---
 
