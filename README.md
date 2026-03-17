@@ -18,7 +18,13 @@ git clone https://github.com/Zhigalkina-Natalya/DRF-homework
 
 Создайте файл `.env` в корне проекта.
 
-Пример содержимого в файле `.env.sample`
+Скопируйте файл `.env.sample` в `.env`:
+```
+cp .env.sample .env
+```
+Файл `.env.sample` содержит пример всех необходимых переменных окружения.
+
+При необходимости измените значения (например, пароль базы данных или секретный ключ Django).
 
 ## 3. Запуск проекта
 
@@ -49,6 +55,15 @@ http://localhost:8000/api/docs/swagger/
 Проверить контейнер:
 ```
 docker ps
+```
+## Проверка Redis
+Проверить доступность Redis:
+```
+docker compose exec redis redis-cli ping
+```
+Ожидаемый ответ:
+```
+PONG
 ```
 ## Проверка Celery Worker
 
