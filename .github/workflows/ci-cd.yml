@@ -12,7 +12,6 @@ on:
       - develop
 
 jobs:
-
   test:
     runs-on: ubuntu-latest
 
@@ -20,8 +19,6 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DEBUG: False
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -37,7 +34,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.13
