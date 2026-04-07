@@ -30,7 +30,12 @@ services:
   web:
     build: .
     container_name: drf-homework-web
-    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - static_volume:/app/staticfiles
     env_file:
       - .env
     depends_on:
@@ -71,3 +76,4 @@ services:
 
 volumes:
   postgres_data:
+  static_volume:
