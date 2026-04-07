@@ -8,6 +8,7 @@ from materials.models import Course, Lesson, Subscription
 from materials.paginators import CoursePagination, LessonPagination
 from materials.permissions import IsModerator, IsOwner
 from materials.serializers import CourseSerializer, LessonSerializer
+from materials.tasks import send_course_update_email
 
 
 class CourseViewSet(viewsets.ModelViewSet):
@@ -45,6 +46,13 @@ class CourseViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [permissions.IsAuthenticated]
         return [permission() for permission in self.permission_classes]
+
+    def perform_update(self, serializer):
+        """Отправка письма подписчикам при обновлении курса"""
+
+        course = serializer.save()
+        # запускаем celery задачу
+        send_course_update_email.delay(course.id)
 
 
 class LessonListCreateView(generics.ListCreateAPIView):
