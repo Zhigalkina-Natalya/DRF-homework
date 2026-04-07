@@ -29,14 +29,27 @@ services:
 
   web:
     build: .
+    container_name: drf-homework-web
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     env_file:
       - .env
-    ports:
-      - "8000:8000"
     depends_on:
       - db
       - redis
+
+  nginx:
+    build:
+      context: ./nginx
+    container_name: drf-homework-nginx
+    ports:
+      - "80:80"
+      - "443:443"   # для HTTPS
+    depends_on:
+      - web
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/conf.d:/etc/nginx/conf.d
 
   celery:
     build: .
