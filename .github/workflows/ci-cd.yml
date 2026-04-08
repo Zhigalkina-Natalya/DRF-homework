@@ -92,7 +92,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: [lint, test]
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/feature/homework_35_2'
 
     steps:
       - name: Deploy to server
