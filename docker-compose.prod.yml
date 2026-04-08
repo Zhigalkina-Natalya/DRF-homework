@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-
   db:
     image: postgres:16
     restart: always
@@ -12,7 +11,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB" ]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -23,31 +22,33 @@ services:
     ports:
       - "6379:6379"
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
 
   web:
     build: .
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    container_name: drf-homework-web
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - static_volume:/app/staticfiles
     env_file:
       - .env
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
 
   nginx:
-    build: ./nginx
+    build:
+      context: ./nginx
+    container_name: drf-homework-nginx
     ports:
       - "80:80"
-      - "443:443"
+      - "443:443"   # для HTTPS
     depends_on:
       - web
     volumes:
@@ -60,26 +61,19 @@ services:
     command: celery -A config worker -l info
     env_file:
       - .env
-    volumes:
-      - .:/app
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
 
   celery-beat:
     build: .
     command: sh -c "python manage.py migrate && celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
     env_file:
       - .env
-    volumes:
-      - .:/app
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
 
 volumes:
   postgres_data:
+  static_volume:
