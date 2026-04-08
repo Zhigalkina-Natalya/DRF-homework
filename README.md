@@ -50,6 +50,19 @@ cp .env.prod.sample .env
 ```
 При необходимости измените значения (например, пароль базы данных или секретный ключ Django).
 
+# Настройка сервера
+
+На сервере установлены:
+- Docker
+- Docker Compose
+
+Открытые порты:
+- 80 (HTTP)
+- 443 (HTTPS)
+- 22 (SSH)
+
+Доступ осуществляется по SSH-ключу.
+
 ## 3. Проверка открытых портов и закрытие лишних
 
 Чтобы проверить, какие порты слушает сервер:
@@ -82,6 +95,46 @@ docker compose up --build
 - Redis
 - Celery Worker
 - Celery Beat
+
+# Production запуск
+
+## Запуск на сервере
+```
+docker compose -f docker-compose.prod.yml up -d --build
+```
+Приложение будет доступно по адресу:
+```
+http://<SERVER_IP>
+```
+
+# CI/CD
+
+Проект использует GitHub Actions:
+
+- При каждом push запускаются:
+  - линтер (flake8)
+  - тесты (Django test)
+
+- После успешных тестов:
+  - выполняется деплой на сервер через SSH
+
+Workflow находится в:
+```
+.github/workflows/ci-cd.yml
+```
+
+# Настройка сервера
+
+На сервере установлены:
+- Docker
+- Docker Compose
+
+Открытые порты:
+- 80 (HTTP)
+- 443 (HTTPS)
+- 22 (SSH)
+
+Доступ осуществляется по SSH-ключу.
 
 
 # Проверка работы сервисов
@@ -133,6 +186,7 @@ docker compose logs celery-beat
 | Celery Worker | выполнение фоновых задач        |
 | Celery Beat   | планировщик периодических задач |
 
+```
 # Структура проекта
 DRF-homework/
 ├── config/ # Настройки Django и Celery
@@ -143,9 +197,12 @@ DRF-homework/
 ├── users/ # Приложение для пользователей и платежей
 ├── templates/ # HTML-шаблоны (страницы оплаты)
 ├── docker-compose.yml
+├── docker-compose.prod.yml
 ├── Dockerfile
 ├── .env.sample
+├── .env.prod.sample
 └── manage.py
+```
 
 # Как тестировать
 
@@ -573,5 +630,4 @@ CELERY_RESULT_BACKEND
 ---
 
 Автор
-
 Наталья Жигалкина
