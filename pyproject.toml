@@ -21,7 +21,6 @@ dependencies = [
     "eventlet (>=0.40.4,<0.41.0)",
     "redis (>=7.2.1,<8.0.0)",
     "django-celery-beat (>=2.9.0,<3.0.0)",
-    "gunicorn (>=25.3.0,<26.0.0)",
 ]
 
 
@@ -62,4 +61,3 @@ exclude = '''
 [tool.isort]
 # максимальная длина строки
 line_length = 119
-

@@ -41,19 +41,7 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_healthy
-
-  nginx:
-    build: ./nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - web
-    volumes:
-      - ./staticfiles:/app/staticfiles
-      - ./nginx/certs:/etc/nginx/certs
-      - ./nginx/conf.d:/etc/nginx/conf.d
+        condition: service_started
 
   celery:
     build: .
@@ -70,7 +58,7 @@ services:
 
   celery-beat:
     build: .
-    command: sh -c "python manage.py migrate && celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     env_file:
       - .env
     volumes:

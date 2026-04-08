@@ -30,11 +30,5 @@ COPY . .
 # Открываем порт Django
 EXPOSE 8000
 
-# Создаём папку для логов
-RUN mkdir -p /app/logs \
-    && touch /app/logs/tasks.log \
-    && touch /app/logs/debug.log \
-    && chmod -R 777 /app/logs
-
 # Команда запуска Django
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
